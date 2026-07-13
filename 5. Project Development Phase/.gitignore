@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+saved_models/*.pkl
+instance/*.db
+logs/*.log
+.pytest_cache/
+.coverage
