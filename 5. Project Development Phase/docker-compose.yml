@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  opticrop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opticrop_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY}
+      - CSRF_SECRET_KEY=${CSRF_SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}
+      - DATABASE_PATH=/app/instance/opticrop.db
+      - MODEL_REGISTRY_PATH=/app/saved_models/
+      - ACTIVE_MODEL_PATH=${ACTIVE_MODEL_PATH:-/app/saved_models/model_latest.pkl}
+      - ACTIVE_SCALER_PATH=${ACTIVE_SCALER_PATH:-/app/saved_models/scaler_latest.pkl}
+      - DATASET_PATH=/app/datasets/crop_recommendation.csv
+      - LOG_PATH=/app/logs/opticrop.log
+      - LOG_LEVEL=INFO
+      - GUNICORN_WORKERS=4
+      - RECOMMEND_RATE_LIMIT=20 per minute
+      - SUITABILITY_RATE_LIMIT=20 per minute
+      - SUITABILITY_THRESHOLDS=${SUITABILITY_THRESHOLDS:-{}}
+    volumes:
+      - opticrop_db:/app/instance
+      - opticrop_models:/app/saved_models
+      - opticrop_logs:/app/logs
+      - opticrop_datasets:/app/datasets
+      - opticrop_eda:/app/app/static/eda
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  opticrop_db:
+  opticrop_models:
+  opticrop_logs:
+  opticrop_datasets:
+  opticrop_eda:
