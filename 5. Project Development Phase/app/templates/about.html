@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}About — OptiCrop AI{% endblock %}
+{% block page_title %}About Us{% endblock %}
+
+{% block content %}
+
+<div style="max-width:800px;margin:0 auto;padding-top:40px;" class="fade-up">
+  <div style="text-align:center;margin-bottom:64px;">
+    <h1 style="font-size:48px;font-weight:800;letter-spacing:-0.03em;color:var(--primary);margin-bottom:16px;">The Future of Farming</h1>
+    <p style="font-size:18px;color:var(--on-surface-variant);line-height:1.7;">
+      OptiCrop AI bridges the gap between advanced machine learning and real-world agricultural challenges. We provide enterprise-grade predictive analytics to optimize yield, conserve resources, and empower agronomists.
+    </p>
+  </div>
+
+  <div class="ambient-card" style="padding:48px;margin-bottom:48px;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;background:rgba(0,110,28,0.04);pointer-events:none;"></div>
+    
+    <div style="display:flex;align-items:flex-start;gap:24px;margin-bottom:40px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:32px;color:#fff;">target</span>
+      </div>
+      <div>
+        <h3 style="font-size:24px;font-weight:700;color:var(--primary);margin-bottom:12px;letter-spacing:-0.01em;">Our Mission</h3>
+        <p style="font-size:16px;color:var(--on-surface-variant);line-height:1.7;">
+          To equip farming enterprises with life-centric AI technology that translates complex environmental signals into actionable tasks, boosting harvest potential while minimizing ecological impact.
+        </p>
+      </div>
+    </div>
+    
+    <div style="display:flex;align-items:flex-start;gap:24px;">
+      <div style="width:64px;height:64px;border-radius:16px;background:var(--secondary-container);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:32px;color:var(--on-secondary-container);">visibility</span>
+      </div>
+      <div>
+        <h3 style="font-size:24px;font-weight:700;color:var(--primary);margin-bottom:12px;letter-spacing:-0.01em;">Our Vision</h3>
+        <p style="font-size:16px;color:var(--on-surface-variant);line-height:1.7;">
+          A global agricultural ecosystem where data-driven precision farming is accessible at scale, ensuring food security and sustainable soil management for generations to come.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div class="glass-card" style="padding:32px;text-align:center;">
+      <div style="font-size:48px;font-weight:800;color:var(--primary);margin-bottom:8px;">22+</div>
+      <div style="font-size:14px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Supported Crops</div>
+    </div>
+    <div class="glass-card" style="padding:32px;text-align:center;">
+      <div style="font-size:48px;font-weight:800;color:var(--secondary);margin-bottom:8px;">98%</div>
+      <div style="font-size:14px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Model Accuracy</div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
