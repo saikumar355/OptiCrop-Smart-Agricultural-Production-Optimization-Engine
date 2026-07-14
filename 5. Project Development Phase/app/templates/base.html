@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}OptiCrop AI{% endblock %}</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+
+  <!-- Design System -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══ Sidebar ═══ -->
+<aside class="oc-sidebar" id="sidebar">
+  <div class="oc-sidebar-brand">
+    <h1>OptiCrop AI</h1>
+    <p>Enterprise Farming</p>
+  </div>
+
+  <nav>
+    <a href="{{ url_for('main_bp.index') }}"
+       class="oc-nav-link {% if request.endpoint == 'main_bp.index' %}active{% endif %}">
+      <span class="material-symbols-outlined">home</span>
+      <span>Home</span>
+    </a>
+    <a href="{{ url_for('recommend_bp.recommend_page') }}"
+       class="oc-nav-link {% if request.endpoint and 'recommend' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">psychology</span>
+      <span>Recommendation</span>
+    </a>
+    <a href="{{ url_for('suitability_bp.suitability_page') }}"
+       class="oc-nav-link {% if request.endpoint and 'suitability' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">potted_plant</span>
+      <span>Suitability</span>
+    </a>
+    <a href="{{ url_for('analytics_bp.analytics_page') }}"
+       class="oc-nav-link {% if request.endpoint and 'analytics' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">monitoring</span>
+      <span>Analytics</span>
+    </a>
+    <a href="{{ url_for('history_bp.history_page') }}"
+       class="oc-nav-link {% if request.endpoint and 'history' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">history</span>
+      <span>History</span>
+    </a>
+    <a href="{{ url_for('dashboard_bp.dashboard_page') }}"
+       class="oc-nav-link {% if request.endpoint and 'dashboard' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('main_bp.research') }}"
+       class="oc-nav-link {% if request.endpoint == 'main_bp.research' %}active{% endif %}">
+      <span class="material-symbols-outlined">science</span>
+      <span>Research</span>
+    </a>
+    <a href="{{ url_for('main_bp.about') }}"
+       class="oc-nav-link {% if request.endpoint == 'main_bp.about' %}active{% endif %}">
+      <span class="material-symbols-outlined">info</span>
+      <span>About</span>
+    </a>
+    <a href="{{ url_for('main_bp.contact') }}"
+       class="oc-nav-link {% if request.endpoint == 'main_bp.contact' %}active{% endif %}">
+      <span class="material-symbols-outlined">contact_support</span>
+      <span>Contact</span>
+    </a>
+    {% if session.get('admin_logged_in') %}
+    <a href="{{ url_for('admin_bp.admin_dashboard') }}"
+       class="oc-nav-link {% if request.endpoint and 'admin' in request.endpoint %}active{% endif %}">
+      <span class="material-symbols-outlined">shield</span>
+      <span>Admin</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="oc-sidebar-footer">
+    {% if session.get('admin_logged_in') %}
+    <div class="user-info" style="margin-bottom:16px">
+      <div class="avatar">A</div>
+      <div>
+        <div class="user-name">Admin</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    <a href="{{ url_for('admin_bp.admin_logout') }}" class="oc-nav-link" style="padding:8px 0;border:none">
+      <span class="material-symbols-outlined" style="font-size:18px">logout</span>
+      <span style="font-size:12px">Logout</span>
+    </a>
+    {% else %}
+    <a href="{{ url_for('admin_bp.admin_login_get') }}" class="oc-nav-link" style="padding:10px 0;border:none">
+      <span class="material-symbols-outlined" style="font-size:18px">lock</span>
+      <span style="font-size:12px">Admin Login</span>
+    </a>
+    {% endif %}
+  </div>
+</aside>
+
+<!-- ═══ Main ═══ -->
+<div class="oc-main">
+
+  <!-- Topbar -->
+  <header class="oc-topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <div class="search-wrap" style="display:none" id="searchWrap">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" placeholder="Search...">
+    </div>
+    <div style="flex:1"></div>
+
+    <div class="topbar-actions">
+      <button class="icon-btn" title="Notifications">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="badge"></span>
+      </button>
+      <div class="divider"></div>
+      <span class="page-title">{% block page_title %}OptiCrop{% endblock %}</span>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="padding: 0 32px; margin-top: 16px;">
+    {% for category, message in messages %}
+    <div class="oc-alert {{ 'success' if category == 'success' else 'danger' if category == 'danger' else 'warning' if category == 'warning' else 'info' }}"
+         style="margin-bottom:8px">
+      <span class="material-symbols-outlined">
+        {% if category == 'success' %}check_circle{% elif category == 'danger' %}error{% else %}info{% endif %}
+      </span>
+      <div>{{ message }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Page Content -->
+  <main class="oc-canvas">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer style="padding: 20px 32px; border-top: 1px solid rgba(192,201,187,0.3); display:flex; justify-content:space-between; align-items:center; font-size:12px; color: var(--on-surface-variant); flex-wrap:wrap; gap:8px;">
+    <span>© 2026 OptiCrop AI Enterprise Solutions.</span>
+    <div style="display:flex; align-items:center; gap:6px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--secondary);display:inline-block"></span>
+      System Status: All Green
+    </div>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<script>
+// CSRF helper (global)
+function getCsrfToken() {
+  return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+}
+
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+const toggle  = document.getElementById('sidebarToggle');
+if (toggle) {
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+}
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+}
+
+// Fade-up on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Glass card hover shadow
+document.querySelectorAll('.glass-card, .ambient-card').forEach(card => {
+  card.addEventListener('mouseenter', () => { card.style.boxShadow = '0 12px 32px rgba(0,0,0,0.10)'; });
+  card.addEventListener('mouseleave', () => { card.style.boxShadow = ''; });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
