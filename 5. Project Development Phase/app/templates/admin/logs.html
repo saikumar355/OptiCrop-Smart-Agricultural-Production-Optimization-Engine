@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Prediction Logs — Admin — OptiCrop AI{% endblock %}
+{% block page_title %}Prediction Logs{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;" class="fade-up">
+  <div>
+    <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);">Prediction Logs</h2>
+    <p style="font-size:14px;color:var(--on-surface-variant);margin-top:6px;">Full audit trail of every prediction request. Raw IPs are never stored.</p>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <form method="POST" action="{{ url_for('admin_bp.admin_clear_history') }}"
+          onsubmit="return confirm('WARNING: Permanently delete all prediction history?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm">
+        <span class="material-symbols-outlined" style="font-size:16px;">delete_forever</span>
+        Clear All
+      </button>
+    </form>
+    <a href="{{ url_for('admin_bp.admin_dashboard') }}" class="btn btn-secondary btn-sm">
+      <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span>
+      Back to Admin
+    </a>
+  </div>
+</div>
+
+<div class="ambient-card fade-up" style="overflow:hidden;padding:0;">
+
+  <!-- Table loader -->
+  <div id="tableLoader" style="height:120px;display:flex;align-items:center;justify-content:center;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Table -->
+  <div id="tableWrap" style="display:none;overflow-x:auto;">
+    <table class="oc-table" id="logsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Crop</th>
+          <th>N</th><th>P</th><th>K</th>
+          <th>Temp (°C)</th><th>Hum (%)</th><th>Rain (mm)</th><th>pH</th>
+          <th>Confidence</th>
+          <th>Model</th>
+          <th>Hashed IP</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="logsBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" style="display:none;text-align:center;padding:60px 24px;">
+    <span class="material-symbols-outlined" style="font-size:56px;color:var(--outline-variant);display:block;margin-bottom:16px;">inbox</span>
+    <h4 style="font-size:16px;font-weight:700;color:var(--on-surface-variant);">No prediction records</h4>
+    <p style="font-size:13px;color:var(--on-surface-variant);margin-top:6px;">Make a crop recommendation to see records here.</p>
+  </div>
+
+  <!-- Pagination footer -->
+  <div id="pagination" style="display:none;padding:16px 20px;border-top:1px solid rgba(192,201,187,0.3);
+       display:flex;justify-content:space-between;align-items:center;">
+    <span id="pageInfo" style="font-size:12px;color:var(--on-surface-variant);">—</span>
+    <div style="display:flex;gap:8px;">
+      <button id="prevBtn" class="btn btn-secondary btn-sm" disabled>
+        <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span> Prev
+      </button>
+      <button id="nextBtn" class="btn btn-secondary btn-sm" disabled>
+        Next <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  let currentPage = 1;
+  const PAGE_SIZE = 25;
+
+  const loader   = document.getElementById('tableLoader');
+  const tableWrap = document.getElementById('tableWrap');
+  const emptyEl  = document.getElementById('emptyState');
+  const pagEl    = document.getElementById('pagination');
+  const body     = document.getElementById('logsBody');
+  const prevBtn  = document.getElementById('prevBtn');
+  const nextBtn  = document.getElementById('nextBtn');
+  const pageInfo = document.getElementById('pageInfo');
+
+  async function load(page) {
+    tableWrap.style.display = 'none';
+    emptyEl.style.display   = 'none';
+    loader.style.display    = 'flex';
+    prevBtn.disabled = nextBtn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/history?page=${page}&page_size=${PAGE_SIZE}`);
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+
+      loader.style.display = 'none';
+
+      if (data.records.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      body.innerHTML = '';
+      data.records.forEach(r => {
+        const conf    = (r.confidence_score * 100).toFixed(1);
+        const timeStr = new Date(r.timestamp).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+        const shortIp = r.hashed_ip ? r.hashed_ip.substring(0, 16) + '…' : '—';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-size:12px;color:var(--on-surface-variant);">#${r.id}</td>
+          <td style="font-size:13px;font-weight:600;color:var(--primary);text-transform:capitalize;">${r.predicted_crop}</td>
+          <td style="font-size:12px;">${r.N.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.P.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.K.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.temperature.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.humidity.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.rainfall.toFixed(1)}</td>
+          <td style="font-size:12px;">${r.ph.toFixed(1)}</td>
+          <td style="font-size:12px;font-weight:600;">${conf}%</td>
+          <td><span class="chip chip-neutral" style="font-size:10px;">${r.model_name}</span></td>
+          <td style="font-size:11px;color:var(--on-surface-variant);font-family:monospace;">${shortIp}</td>
+          <td style="font-size:12px;color:var(--on-surface-variant);">${timeStr}</td>
+          <td>
+            <form method="POST" action="/admin/records/${r.id}/delete"
+                  onsubmit="return confirm('Delete record #${r.id}?');" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit"
+                      style="background:none;border:none;cursor:pointer;color:var(--error);padding:4px;border-radius:4px;"
+                      title="Delete"
+                      onmouseover="this.style.background='rgba(186,26,26,0.1)'"
+                      onmouseout="this.style.background='none'">
+                <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+              </button>
+            </form>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+
+      tableWrap.style.display = 'block';
+      pagEl.style.display = 'flex';
+      const start = (data.page - 1) * data.page_size + 1;
+      const end   = start + data.records.length - 1;
+      pageInfo.textContent = `Showing ${start}–${end} of ${data.total.toLocaleString()} records`;
+      prevBtn.disabled = data.page <= 1;
+      nextBtn.disabled = data.total <= data.page * data.page_size;
+      currentPage = data.page;
+
+    } catch (err) {
+      loader.style.display = 'none';
+      emptyEl.style.display = 'block';
+    }
+  }
+
+  prevBtn.addEventListener('click', () => load(currentPage - 1));
+  nextBtn.addEventListener('click', () => load(currentPage + 1));
+  load(currentPage);
+});
+</script>
+{% endblock %}
