@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Research &amp; Methodology — OptiCrop AI{% endblock %}
+{% block page_title %}Technology{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:48px;" class="fade-up">
+  <span class="chip chip-neutral" style="margin-bottom:16px;">Whitepaper Extract</span>
+  <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);line-height:1.1;">Neural Architecture &amp;<br>Agronomic Models</h2>
+  <p style="font-size:16px;color:var(--on-surface-variant);max-width:640px;margin-top:16px;line-height:1.7;">
+    OptiCrop AI leverages an ensemble of machine learning algorithms to model complex, non-linear relationships between soil chemistry, climate variables, and crop yield outcomes.
+  </p>
+</div>
+
+<div style="display:grid;grid-template-columns:3fr 1fr;gap:48px;" class="fade-up">
+  
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    
+    <!-- Section 1 -->
+    <div class="ambient-card" style="padding:40px;">
+      <h3 style="font-size:22px;font-weight:700;color:var(--primary);margin-bottom:16px;letter-spacing:-0.01em;">Dataset &amp; Preprocessing</h3>
+      <p style="font-size:15px;color:var(--on-surface-variant);line-height:1.7;margin-bottom:20px;">
+        The underlying dataset comprises high-fidelity soil measurements across diverse geographical zones. Key features include <span style="font-weight:600;color:var(--on-surface);">Nitrogen (N), Phosphorus (P), Potassium (K), pH, temperature, humidity, and rainfall</span>.
+      </p>
+      <div style="background:var(--surface-container-low);padding:24px;border-radius:12px;border-left:4px solid var(--secondary);">
+        <h4 style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Data Integrity Pipeline</h4>
+        <ul style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;margin-left:16px;">
+          <li>Outlier detection using IQR (Interquartile Range) mapping.</li>
+          <li>Feature scaling via Scikit-Learn's <code>StandardScaler</code> to normalize variance.</li>
+          <li>SMOTE (Synthetic Minority Over-sampling Technique) applied dynamically to balance under-represented crop classes in edge-case soil profiles.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="ambient-card" style="padding:40px;">
+      <h3 style="font-size:22px;font-weight:700;color:var(--primary);margin-bottom:16px;letter-spacing:-0.01em;">Ensemble Modeling</h3>
+      <p style="font-size:15px;color:var(--on-surface-variant);line-height:1.7;margin-bottom:20px;">
+        We train 9 distinct classifiers simultaneously. The <code>ModelSelector</code> evaluates each using 10-fold cross-validation, optimizing for the weighted F1-score to handle class imbalances gracefully.
+      </p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="border:1px solid var(--outline-variant);border-radius:12px;padding:20px;">
+          <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:8px;">Random Forest</div>
+          <p style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;">Our primary performer. Excels at capturing non-linear boundaries in NPK ratios.</p>
+        </div>
+        <div style="border:1px solid var(--outline-variant);border-radius:12px;padding:20px;">
+          <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:8px;">Gradient Boosting (XGBoost)</div>
+          <p style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;">Highly resilient to noise in rainfall and humidity sensor data streams.</p>
+        </div>
+        <div style="border:1px solid var(--outline-variant);border-radius:12px;padding:20px;">
+          <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:8px;">Gaussian Naive Bayes</div>
+          <p style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;">Serves as a probabilistic baseline, performing exceptionally fast inference.</p>
+        </div>
+        <div style="border:1px solid var(--outline-variant);border-radius:12px;padding:20px;">
+          <div style="font-size:18px;font-weight:700;color:var(--primary);margin-bottom:8px;">Support Vector Machine</div>
+          <p style="font-size:13px;color:var(--on-surface-variant);line-height:1.5;">Utilizes RBF kernels to project soil data into higher dimensions for separation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="ambient-card" style="padding:40px;">
+      <h3 style="font-size:22px;font-weight:700;color:var(--primary);margin-bottom:16px;letter-spacing:-0.01em;">Confidence Scoring</h3>
+      <p style="font-size:15px;color:var(--on-surface-variant);line-height:1.7;">
+        The returned recommendation includes a probability distribution. Using <code>predict_proba</code>, we extract the confidence score of the top class. This ensures enterprise users only act on statistically significant predictions. In cases where the top score is below a 60% threshold, the system flags the result as marginal, requiring human agronomic review.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <div>
+    <div class="glass-card" style="padding:24px;position:sticky;top:calc(var(--topbar-h) + 24px);">
+      <h4 style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--primary);margin-bottom:16px;">Tech Stack</h4>
+      
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="font-size:11px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Backend Framework</div>
+          <div style="font-size:14px;font-weight:600;color:var(--on-surface);">Flask (Python 3.11)</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Machine Learning</div>
+          <div style="font-size:14px;font-weight:600;color:var(--on-surface);">Scikit-Learn, Pandas, NumPy</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Frontend</div>
+          <div style="font-size:14px;font-weight:600;color:var(--on-surface);">HTML5, Vanilla JS, Chart.js</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Design System</div>
+          <div style="font-size:14px;font-weight:600;color:var(--on-surface);">Custom CSS (Material Design 3)</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--on-surface-variant);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Database</div>
+          <div style="font-size:14px;font-weight:600;color:var(--on-surface);">SQLite / SQLAlchemy</div>
+        </div>
+      </div>
+      
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(192,201,187,0.4);">
+        <a href="https://github.com/scikit-learn/scikit-learn" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--secondary);text-decoration:none;">
+          <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span> External References
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
