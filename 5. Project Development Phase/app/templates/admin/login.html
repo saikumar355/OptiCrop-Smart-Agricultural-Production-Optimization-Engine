@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — OptiCrop AI{% endblock %}
+{% block page_title %}Admin Access{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+  <div class="ambient-card" style="padding:48px;width:100%;max-width:420px;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(0,69,13,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <span class="material-symbols-outlined" style="font-size:30px;color:var(--primary);">shield_lock</span>
+      </div>
+      <h2 style="font-size:22px;font-weight:800;color:var(--primary);margin-bottom:6px;">Admin Access</h2>
+      <p style="font-size:13px;color:var(--on-surface-variant);">Restricted to authorized personnel only.</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="oc-alert {{ 'success' if category == 'success' else 'danger' }}" style="margin-bottom:20px;">
+      <span class="material-symbols-outlined">{{ 'check_circle' if category == 'success' else 'error' }}</span>
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('admin_bp.admin_login_post') }}" autocomplete="off">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="oc-field" style="margin-bottom:24px;">
+        <input type="text" name="username" id="username" placeholder=" " required autofocus autocomplete="off">
+        <label for="username">Username</label>
+      </div>
+
+      <div class="oc-field" style="margin-bottom:32px;">
+        <input type="password" name="password" id="password" placeholder=" " required autocomplete="current-password">
+        <label for="password">Password</label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="padding:14px;font-size:15px;border-radius:12px;">
+        <span class="material-symbols-outlined">lock_open</span>
+        Login
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
