@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Prediction History — OptiCrop AI{% endblock %}
+{% block page_title %}History{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;" class="fade-up">
+  <div>
+    <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);">Recent Predictions</h2>
+    <p style="font-size:14px;color:var(--on-surface-variant);margin-top:6px;">Real-time AI analysis results from all prediction requests</p>
+  </div>
+  <div style="display:flex;gap:12px;">
+    <a href="{{ url_for('recommend_bp.recommend_page') }}" class="btn btn-primary btn-sm">
+      <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+      New Prediction
+    </a>
+  </div>
+</div>
+
+<div class="ambient-card fade-up" style="overflow:hidden;padding:0;">
+
+  <!-- Table Loader Overlay -->
+  <div id="tableLoader" style="height:120px;display:flex;align-items:center;justify-content:center;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Table -->
+  <div id="tableWrap" style="display:none;">
+    <table class="oc-table" id="historyTable">
+      <thead>
+        <tr>
+          <th>Crop Analysis</th>
+          <th>N</th><th>P</th><th>K</th>
+          <th>Temp (°C)</th><th>Hum (%)</th><th>Rain (mm)</th><th>pH</th>
+          <th>Confidence</th>
+          <th>Model</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" style="display:none;text-align:center;padding:60px 24px;">
+    <span class="material-symbols-outlined" style="font-size:56px;color:var(--outline-variant);display:block;margin-bottom:16px;">inbox</span>
+    <h4 style="font-size:16px;font-weight:700;color:var(--on-surface-variant);">No prediction history yet</h4>
+    <p style="font-size:13px;color:var(--on-surface-variant);margin-top:6px;">Make your first crop recommendation to see it here.</p>
+    <a href="{{ url_for('recommend_bp.recommend_page') }}" class="btn btn-primary btn-sm" style="margin-top:20px;">Try Recommendation</a>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState" style="display:none;padding:32px;">
+    <div class="oc-alert danger">
+      <span class="material-symbols-outlined">error</span>
+      <div>
+        <strong>Failed to load history</strong>
+        <p id="errorMsg" style="font-size:13px;margin-top:4px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination Footer -->
+  <div id="pagination" style="display:none;padding:16px 20px;border-top:1px solid rgba(192,201,187,0.3);display:flex;justify-content:space-between;align-items:center;">
+    <span id="pageInfo" style="font-size:12px;color:var(--on-surface-variant);">—</span>
+    <div style="display:flex;gap:8px;">
+      <button id="prevBtn" class="btn btn-secondary btn-sm" disabled>
+        <span class="material-symbols-outlined" style="font-size:16px;">chevron_left</span> Prev
+      </button>
+      <button id="nextBtn" class="btn btn-secondary btn-sm" disabled>
+        Next <span class="material-symbols-outlined" style="font-size:16px;">chevron_right</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  let currentPage = 1;
+  const PAGE_SIZE = 25;
+
+  const loader    = document.getElementById('tableLoader');
+  const tableWrap = document.getElementById('tableWrap');
+  const emptyEl   = document.getElementById('emptyState');
+  const errorEl   = document.getElementById('errorState');
+  const pagEl     = document.getElementById('pagination');
+  const body      = document.getElementById('historyBody');
+  const prevBtn   = document.getElementById('prevBtn');
+  const nextBtn   = document.getElementById('nextBtn');
+  const pageInfo  = document.getElementById('pageInfo');
+
+  const COLORS = ['#00450d','#006e1c','#1b5e20','#2a6b2c'];
+
+  function show(...els) { els.forEach(el => el.style.display = ''); }
+  function hide(...els) { els.forEach(el => el.style.display = 'none'); }
+
+  async function load(page) {
+    hide(tableWrap, emptyEl, errorEl);
+    show(loader);
+    prevBtn.disabled = nextBtn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/history?page=${page}&page_size=${PAGE_SIZE}`);
+      if (!res.ok) throw new Error('Network error');
+      const data = await res.json();
+
+      hide(loader);
+      if (data.records.length === 0) { show(emptyEl); return; }
+
+      body.innerHTML = '';
+      data.records.forEach(r => {
+        const conf = (r.confidence_score * 100).toFixed(1);
+        const pct  = parseFloat(conf);
+        const timeStr = new Date(r.timestamp).toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;border-radius:8px;background:rgba(0,110,28,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--secondary);">eco</span>
+              </div>
+              <span style="font-size:14px;font-weight:600;color:var(--primary);text-transform:capitalize;">${r.predicted_crop}</span>
+            </div>
+          </td>
+          <td style="font-size:13px;">${r.N.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.P.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.K.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.temperature.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.humidity.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.rainfall.toFixed(1)}</td>
+          <td style="font-size:13px;">${r.ph.toFixed(1)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="progress-bar-track" style="width:64px;height:5px;">
+                <div class="progress-bar-fill ${pct >= 80 ? '' : pct >= 60 ? 'amber' : ''}" style="width:${pct}%;"></div>
+              </div>
+              <span style="font-size:12px;font-weight:600;">${conf}%</span>
+            </div>
+          </td>
+          <td><span class="chip chip-neutral">${r.model_name}</span></td>
+          <td style="font-size:12px;color:var(--on-surface-variant);">${timeStr}</td>
+        `;
+        body.appendChild(tr);
+      });
+
+      show(tableWrap, pagEl);
+      pagEl.style.display = 'flex';
+      const start = (data.page - 1) * data.page_size + 1;
+      const end   = start + data.records.length - 1;
+      pageInfo.textContent = `Showing ${start}–${end} of ${data.total.toLocaleString()} predictions`;
+      prevBtn.disabled = data.page <= 1;
+      nextBtn.disabled = data.total <= data.page * data.page_size;
+      currentPage = data.page;
+
+    } catch (err) {
+      hide(loader);
+      document.getElementById('errorMsg').textContent = 'Unable to load prediction history at this time.';
+      show(errorEl);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => load(currentPage - 1));
+  nextBtn.addEventListener('click', () => load(currentPage + 1));
+  load(currentPage);
+});
+</script>
+{% endblock %}
