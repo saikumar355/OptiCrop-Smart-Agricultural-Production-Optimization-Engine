@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Contact — OptiCrop AI{% endblock %}
+{% block page_title %}Contact Us{% endblock %}
+
+{% block content %}
+
+<div style="max-width:1000px;margin:0 auto;padding-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;" class="fade-up">
+
+  <div>
+    <h1 style="font-size:48px;font-weight:800;letter-spacing:-0.03em;color:var(--primary);margin-bottom:16px;line-height:1.1;">Get in Touch</h1>
+    <p style="font-size:16px;color:var(--on-surface-variant);line-height:1.7;margin-bottom:48px;">
+      Whether you're looking for an enterprise deployment, a custom API integration, or simply have questions about our methodology, our team is ready to assist.
+    </p>
+
+    <div style="display:flex;flex-direction:column;gap:32px;">
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,110,28,0.1);display:flex;align-items:center;justify-content:center;color:var(--secondary);flex-shrink:0;">
+          <span class="material-symbols-outlined">location_on</span>
+        </div>
+        <div>
+          <h4 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:4px;">Headquarters</h4>
+          <p style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">124 Agritech Valley<br>Innovation District, CA 94105</p>
+        </div>
+      </div>
+      
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,110,28,0.1);display:flex;align-items:center;justify-content:center;color:var(--secondary);flex-shrink:0;">
+          <span class="material-symbols-outlined">mail</span>
+        </div>
+        <div>
+          <h4 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:4px;">Email Contact</h4>
+          <p style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">enterprise@opticrop.ai<br>support@opticrop.ai</p>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(0,110,28,0.1);display:flex;align-items:center;justify-content:center;color:var(--secondary);flex-shrink:0;">
+          <span class="material-symbols-outlined">call</span>
+        </div>
+        <div>
+          <h4 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:4px;">Phone</h4>
+          <p style="font-size:14px;color:var(--on-surface-variant);line-height:1.6;">+1 (555) 019-2834</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ambient-card" style="padding:40px;">
+    <h3 style="font-size:24px;font-weight:700;color:var(--primary);margin-bottom:24px;letter-spacing:-0.01em;">Send a Message</h3>
+    
+    <form action="#" method="POST" autocomplete="off" onsubmit="event.preventDefault(); alert('Message feature coming soon in v2.0.');">
+      <div class="oc-field" style="margin-bottom:24px;">
+        <input type="text" name="name" id="name" placeholder=" " required>
+        <label for="name">Full Name</label>
+      </div>
+      
+      <div class="oc-field" style="margin-bottom:24px;">
+        <input type="email" name="email" id="email" placeholder=" " required>
+        <label for="email">Work Email</label>
+      </div>
+      
+      <div class="oc-field" style="margin-bottom:24px;">
+        <select name="inquiry" id="inquiry" required>
+          <option value="" disabled selected hidden></option>
+          <option value="enterprise">Enterprise Deployment</option>
+          <option value="api">API Access</option>
+          <option value="support">Technical Support</option>
+          <option value="other">Other</option>
+        </select>
+        <label for="inquiry">Inquiry Type</label>
+      </div>
+      
+      <div class="oc-field" style="margin-bottom:32px;">
+        <textarea name="message" id="message" rows="4" placeholder=" " required style="resize:vertical;"></textarea>
+        <label for="message">Your Message</label>
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-block" style="padding:14px;font-size:15px;border-radius:12px;">
+        Send Message
+      </button>
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}
