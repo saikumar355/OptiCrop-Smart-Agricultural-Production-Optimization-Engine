@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Analytics — OptiCrop AI{% endblock %}
+{% block page_title %}Predictive Analytics{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;" class="fade-up">
+  <div>
+    <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);">Predictive Analytics</h2>
+    <p style="font-size:14px;color:var(--on-surface-variant);margin-top:6px;">Deep diagnostic insights on model performance and crop distribution.</p>
+  </div>
+  <div class="ambient-card" style="display:flex;gap:12px;align-items:center;padding:10px 16px;border-radius:12px;">
+    <span class="material-symbols-outlined" style="font-size:18px;color:var(--primary);">calendar_today</span>
+    <span style="font-size:13px;font-weight:600;color:var(--on-surface-variant);">Live Data</span>
+  </div>
+</div>
+
+<!-- Row 1: Quick stat + model cards -->
+<div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:20px;margin-bottom:20px;" class="fade-up">
+
+  <!-- Dataset Insights -->
+  <div class="ambient-card" style="padding:24px;" id="card-dataset">
+    <h3 style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:20px;">Dataset Insights</h3>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--on-surface-variant);">Total Predictions</span>
+        <span id="ai-total" class="skeleton" style="font-size:14px;font-weight:700;color:var(--primary);min-width:48px;min-height:20px;">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--on-surface-variant);">Crop Classes</span>
+        <span style="font-size:14px;font-weight:700;color:var(--primary);">22</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:var(--on-surface-variant);">Integrity</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--secondary);"></span>
+          <span style="font-size:14px;font-weight:700;color:var(--secondary);">Online</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(192,201,187,0.4);padding-top:10px;margin-top:4px;">
+        <p style="font-size:11px;color:var(--on-surface-variant);font-style:italic;">Real-time data feed</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Status -->
+  <div class="ambient-card" style="padding:24px;" id="card-model">
+    <h3 style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:20px;">Active Model</h3>
+    <div id="modelStatusBody">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="padding:10px;background:rgba(0,110,28,0.08);border-radius:10px;color:var(--secondary);">
+          <span class="material-symbols-outlined" style="font-size:20px;">model_training</span>
+        </div>
+        <div>
+          <p id="modelName" class="skeleton" style="font-size:13px;font-weight:700;min-width:100px;min-height:18px;">Loading...</p>
+          <p style="font-size:11px;color:var(--on-surface-variant);">Production Environment</p>
+        </div>
+      </div>
+      <div style="background:var(--surface-container-low);border-radius:8px;padding:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:600;color:var(--on-surface-variant);">F1 Score</span>
+          <span id="modelF1" class="skeleton" style="font-size:11px;font-weight:700;color:var(--secondary);min-width:40px;">—%</span>
+        </div>
+        <div class="progress-bar-track"><div class="progress-bar-fill secondary" id="modelF1Bar" style="width:0%;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Volume Chart -->
+  <div class="ambient-card" style="padding:24px;" id="card-volume">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:var(--primary);">Prediction Volume</h3>
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--outline);cursor:pointer;">more_vert</span>
+    </div>
+    <div style="height:160px;position:relative;">
+      <div id="volLoader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div class="spinner"></div>
+      </div>
+      <canvas id="volumeChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: Crop Distribution + Feature Importance + Heatmap teaser -->
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;" class="fade-up">
+
+  <!-- Crop Distribution Pie -->
+  <div class="ambient-card" style="padding:24px;" id="card-dist">
+    <h3 style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:20px;">Crop Distribution</h3>
+    <div style="height:200px;position:relative;">
+      <div id="distLoader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div class="spinner"></div>
+      </div>
+      <canvas id="cropChart"></canvas>
+    </div>
+    <div id="cropLegend" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--on-surface-variant);"></div>
+  </div>
+
+  <!-- Model Scores -->
+  <div class="ambient-card" style="padding:24px;" id="card-scores">
+    <h3 style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:20px;">Model Scores (F1)</h3>
+    <div style="height:200px;position:relative;">
+      <div id="scoresLoader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div class="spinner"></div>
+      </div>
+      <canvas id="modelChart"></canvas>
+    </div>
+  </div>
+
+  <!-- NPK / Feature Importance -->
+  <div class="ambient-card" style="padding:24px;" id="card-feat">
+    <h3 style="font-size:15px;font-weight:700;color:var(--primary);margin-bottom:20px;">Key Feature Weights</h3>
+    <div id="featureList" style="display:flex;flex-direction:column;gap:14px;">
+      {% set features = [('Humidity',0.84),('Rainfall',0.76),('Temperature',0.62),('pH Level',0.55),('Nitrogen',0.48),('Potassium',0.41),('Phosphorus',0.38)] %}
+      {% for name, score in features %}
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:4px;">
+          <span>{{ name }}</span><span>{{ score }}</span>
+        </div>
+        <div class="progress-bar-track" style="height:5px;">
+          <div class="progress-bar-fill" style="width:{{ (score*100)|int }}%;transition:width 1s ease;"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ config.CHARTJS_URL }}"></script>
+<script type="module">
+import { renderBarChart, renderLineChart, renderPieChart } from "{{ url_for('static', filename='js/charts.js') }}";
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch('/api/analytics');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+
+    // Total
+    const aiTotal = document.getElementById('ai-total');
+    aiTotal.classList.remove('skeleton');
+
+    // Model
+    if (data.model_scores && data.model_scores.length > 0) {
+      const best = data.model_scores[0];
+      document.getElementById('modelName').classList.remove('skeleton');
+      document.getElementById('modelName').textContent = best.model;
+      document.getElementById('modelF1').classList.remove('skeleton');
+      document.getElementById('modelF1').textContent = (best.f1_weighted*100).toFixed(1) + '%';
+      document.getElementById('modelF1Bar').style.width = (best.f1_weighted*100).toFixed(1) + '%';
+
+      // Model bar chart
+      const mLabels = data.model_scores.map(m => m.model);
+      const mScores = data.model_scores.map(m => m.f1_weighted);
+      document.getElementById('scoresLoader').remove();
+      renderBarChart('modelChart', mLabels, mScores, 'F1 Score', {
+        scales: { y: { min: 0, max: 1, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } }
+      });
+    }
+
+    // Volume chart
+    document.getElementById('volLoader').remove();
+    const vLabels = data.daily_volumes.map(d => d.date);
+    const vCounts = data.daily_volumes.map(d => d.count);
+    renderLineChart('volumeChart', vLabels, vCounts, 'Predictions');
+
+    // Crop distribution
+    if (data.crop_distribution && data.crop_distribution.length > 0) {
+      document.getElementById('distLoader').remove();
+      const top8 = data.crop_distribution.slice(0, 8);
+      const cLabels = top8.map(c => c.crop);
+      const cCounts = top8.map(c => c.count);
+      renderPieChart('cropChart', cLabels, cCounts);
+      const legend = document.getElementById('cropLegend');
+      const colors = ['#00450d','#006e1c','#ffb957','#ba1a1a','#0d6efd','#6610f2','#fd7e14','#20c997'];
+      top8.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;';
+        div.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${colors[i]||'#ccc'};flex-shrink:0;"></span>
+                         <span style="text-transform:capitalize;">${item.crop} (${item.count})</span>`;
+        legend.appendChild(div);
+      });
+    }
+
+  } catch (err) {
+    document.querySelectorAll('.spinner').forEach(s => {
+      s.parentElement.innerHTML = '<span style="font-size:12px;color:var(--on-surface-variant)">Data unavailable</span>';
+    });
+  }
+});
+</script>
+{% endblock %}
