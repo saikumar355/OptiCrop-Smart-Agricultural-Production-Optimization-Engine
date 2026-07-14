@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}Suitability Analysis — OptiCrop AI{% endblock %}
+{% block page_title %}Suitability{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div style="margin-bottom:32px;" class="fade-up">
+  <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);line-height:1.1;">Crop Suitability Analysis</h2>
+  <p style="font-size:15px;color:var(--on-surface-variant);max-width:600px;margin-top:8px;line-height:1.6;">
+    Evaluate whether a specific crop is highly suitable, marginal, or unsuitable for your land based on threshold analysis of 7 key agronomic parameters.
+  </p>
+</div>
+
+<div style="display:grid;grid-template-columns:5fr 7fr;gap:24px;align-items:start;" class="fade-up">
+
+  <!-- ══ Form Panel ══ -->
+  <div class="ambient-card" style="padding:32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+      <h3 style="font-size:16px;font-weight:700;color:var(--secondary);display:flex;align-items:center;gap:8px;">
+        <span class="material-symbols-outlined" style="font-size:20px;">potted_plant</span>
+        Target Crop &amp; Soil Data
+      </h3>
+      <button type="button" id="clearBtn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--error);font-family:inherit;font-weight:600;">
+        <span class="material-symbols-outlined" style="font-size:16px;">restart_alt</span>
+        Clear All
+      </button>
+    </div>
+
+    <form id="suitabilityForm" novalidate style="display:flex;flex-direction:column;gap:24px;">
+
+      <!-- Crop Selection -->
+      <div class="oc-field" id="field-crop">
+        <select name="crop" id="inp-crop" required>
+          <option value="" disabled selected hidden></option>
+          {% for c in crops %}
+          <option value="{{ c }}">{{ c|capitalize }}</option>
+          {% endfor %}
+        </select>
+        <label for="inp-crop">Target Crop</label>
+        <div class="field-hint"><span>Select crop to evaluate</span></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="oc-field" id="field-N">
+          <input type="number" step="0.1" name="N" id="inp-N" placeholder=" ">
+          <label for="inp-N">Nitrogen (N)</label>
+        </div>
+        <div class="oc-field" id="field-P">
+          <input type="number" step="0.1" name="P" id="inp-P" placeholder=" ">
+          <label for="inp-P">Phosphorus (P)</label>
+        </div>
+        <div class="oc-field" id="field-K">
+          <input type="number" step="0.1" name="K" id="inp-K" placeholder=" ">
+          <label for="inp-K">Potassium (K)</label>
+        </div>
+        <div class="oc-field" id="field-ph">
+          <input type="number" step="0.1" name="ph" id="inp-ph" placeholder=" ">
+          <label for="inp-ph">Soil pH</label>
+        </div>
+        <div class="oc-field" id="field-temperature">
+          <input type="number" step="0.1" name="temperature" id="inp-temperature" placeholder=" ">
+          <label for="inp-temperature">Temp (°C)</label>
+        </div>
+        <div class="oc-field" id="field-humidity">
+          <input type="number" step="0.1" name="humidity" id="inp-humidity" placeholder=" ">
+          <label for="inp-humidity">Humidity (%)</label>
+        </div>
+        <div class="oc-field" style="grid-column:span 2;" id="field-rainfall">
+          <input type="number" step="0.1" name="rainfall" id="inp-rainfall" placeholder=" ">
+          <label for="inp-rainfall">Annual Rainfall (mm)</label>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn btn-primary btn-block" style="padding:16px;font-size:16px;border-radius:12px;margin-top:8px;">
+        <span class="material-symbols-outlined">rule</span>
+        Analyze Suitability
+      </button>
+    </form>
+  </div>
+
+  <!-- ══ Result Panel ══ -->
+  <div style="position:sticky;top:calc(var(--topbar-h) + 24px);">
+
+    <!-- Empty State -->
+    <div id="initialState" class="ambient-card" style="padding:40px;text-align:center;min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--outline-variant);">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--surface-container-high);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+        <span class="material-symbols-outlined" style="font-size:36px;color:var(--outline-variant);">science</span>
+      </div>
+      <h4 style="font-size:16px;font-weight:700;color:var(--on-surface);margin-bottom:8px;">No Analysis Run</h4>
+      <p style="font-size:14px;color:var(--on-surface-variant);line-height:1.5;max-width:280px;">Select a crop and input soil parameters to evaluate structural suitability.</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="ambient-card" style="display:none;padding:40px;text-align:center;min-height:400px;flex-direction:column;align-items:center;justify-content:center;">
+      <div class="spinner" style="width:40px;height:40px;border-width:4px;margin-bottom:24px;"></div>
+      <h4 style="font-size:15px;font-weight:700;color:var(--primary);">Processing Data</h4>
+      <p style="font-size:13px;color:var(--on-surface-variant);margin-top:4px;">Running parameter threshold analysis...</p>
+    </div>
+
+    <!-- Result State (hidden) -->
+    <div id="resultState" style="display:none;">
+      
+      <div class="glass-card" style="padding:32px;margin-bottom:16px;" id="resultCard">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <div>
+            <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.06em;color:var(--on-surface-variant);font-weight:700;margin-bottom:4px;">Target Crop</h4>
+            <h3 style="font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);text-transform:capitalize;" id="resCropName">—</h3>
+          </div>
+          <div id="overallBadge" class="chip" style="font-size:13px;padding:6px 16px;">—</div>
+        </div>
+
+        <div style="background:var(--surface-container-low);border-radius:12px;padding:16px;margin-bottom:24px;">
+          <p style="font-size:14px;line-height:1.6;color:var(--on-surface);" id="overallFeedback">—</p>
+        </div>
+
+        <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:0.06em;color:var(--on-surface-variant);font-weight:700;margin-bottom:16px;">Parameter Breakdown</h4>
+        <div id="issuesList" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+
+      <!-- Error Card -->
+      <div id="errorCard" style="display:none;">
+        <div class="oc-alert danger">
+          <span class="material-symbols-outlined">error</span>
+          <div>
+            <strong style="display:block;margin-bottom:4px;">Analysis Failed</strong>
+            <span id="errorMsg"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+import { validateForm, bindValidationClear } from "{{ url_for('static', filename='js/validation.js') }}";
+
+// CSRF token — read directly since getCsrfToken() may not be visible in module scope
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+const form = document.getElementById('suitabilityForm');
+const btn  = document.getElementById('submitBtn');
+const init = document.getElementById('initialState');
+const load = document.getElementById('loadingState');
+const res  = document.getElementById('resultState');
+const card = document.getElementById('resultCard');
+const err  = document.getElementById('errorCard');
+
+bindValidationClear(form);
+
+// Clear crop dropdown error on change
+const cropEl = document.getElementById('inp-crop');
+if (cropEl) {
+  cropEl.addEventListener('change', () => {
+    cropEl.classList.remove('is-invalid');
+    const fb = cropEl.parentNode.querySelector('.invalid-feedback');
+    if (fb) fb.remove();
+  });
+}
+
+document.getElementById('clearBtn').addEventListener('click', () => { form.reset(); });
+
+function renderIssue(param, status, feedback) {
+  let icon = 'check_circle';
+  let color = 'var(--secondary)';
+  let bg = 'rgba(0,110,28,0.08)';
+
+  if (status === 'marginal') {
+    icon = 'warning'; color = 'var(--tertiary)'; bg = 'rgba(255,185,87,0.15)';
+  } else if (status === 'unsuitable') {
+    icon = 'cancel'; color = 'var(--error)'; bg = 'rgba(186,26,26,0.08)';
+  }
+
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:10px;background:var(--surface-container-lowest);border:1px solid var(--outline-variant);';
+  div.innerHTML = `
+    <div style="width:32px;height:32px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <span class="material-symbols-outlined" style="font-size:18px;color:${color};">${icon}</span>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:2px;text-transform:capitalize;">${param}</div>
+      <div style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;">${feedback}</div>
+    </div>
+  `;
+  return div;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { isValid, data } = validateForm(form);
+
+  // Validate crop dropdown separately (not in FIELD_RANGES)
+  const cropEl = document.getElementById('inp-crop');
+  const cropVal = cropEl ? cropEl.value : '';
+  if (!cropVal) {
+    if (cropEl) {
+      cropEl.classList.add('is-invalid');
+      if (!cropEl.parentNode.querySelector('.invalid-feedback')) {
+        const d = document.createElement('div');
+        d.className = 'invalid-feedback';
+        d.textContent = 'Please select a target crop.';
+        cropEl.parentNode.appendChild(d);
+      }
+    }
+    return;
+  }
+  data['crop'] = cropVal;
+
+  if (!isValid) return;
+
+  init.style.display = res.style.display = err.style.display = 'none';
+  load.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch("{{ url_for('suitability_bp.api_suitability') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify(data)
+    });
+    const json = await response.json();
+
+    if (response.ok) {
+      document.getElementById('resCropName').textContent = json.crop;
+      const b = document.getElementById('overallBadge');
+      b.className = 'chip';
+      if (json.is_suitable) {
+        b.classList.add('chip-green');
+        b.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">verified</span> Highly Suitable';
+      } else {
+        b.classList.add('chip-red');
+        b.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">warning</span> Unsuitable';
+      }
+      
+      document.getElementById('overallFeedback').textContent = json.feedback;
+      
+      const list = document.getElementById('issuesList');
+      list.innerHTML = '';
+      if (json.issues && typeof json.issues === 'object') {
+        for (const [param, info] of Object.entries(json.issues)) {
+          list.appendChild(renderIssue(param, info.status, info.feedback));
+        }
+      }
+      
+      card.style.display = 'block';
+      err.style.display = 'none';
+      res.style.display = 'block';
+    } else {
+      document.getElementById('errorMsg').textContent = json.error || 'Server error occurred.';
+      card.style.display = 'none';
+      err.style.display = 'block';
+      res.style.display = 'block';
+    }
+  } catch (error) {
+    document.getElementById('errorMsg').textContent = 'Network error. Please try again.';
+    card.style.display = 'none';
+    err.style.display = 'block';
+    res.style.display = 'block';
+  } finally {
+    load.style.display = 'none';
+    btn.disabled = false;
+  }
+});
+</script>
+{% endblock %}
