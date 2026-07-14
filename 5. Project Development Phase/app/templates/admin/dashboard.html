@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — OptiCrop AI{% endblock %}
+{% block page_title %}Admin Console{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;" class="fade-up">
+  <div>
+    <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);">System Admin</h2>
+    <p style="font-size:14px;color:var(--on-surface-variant);margin-top:6px;">Manage database records and system configuration.</p>
+  </div>
+  <div style="display:flex;gap:12px;">
+    <form method="POST" action="{{ url_for('admin_bp.admin_clear_history') }}" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete all prediction history?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm">
+        <span class="material-symbols-outlined" style="font-size:16px;">delete_forever</span>
+        Clear All History
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="ambient-card fade-up" style="overflow:hidden;padding:0;">
+  <div style="padding:24px 32px;border-bottom:1px solid rgba(192,201,187,0.3);display:flex;justify-content:space-between;align-items:center;background:var(--surface-container-lowest);">
+    <h3 style="font-size:18px;font-weight:700;color:var(--primary);">Prediction Logs</h3>
+    <span class="chip chip-neutral">Total Records: {{ predictions|length }}</span>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="oc-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Crop Analysis</th>
+          <th>N</th><th>P</th><th>K</th>
+          <th>Temp (°C)</th><th>Hum (%)</th><th>Rain (mm)</th><th>pH</th>
+          <th>Confidence</th>
+          <th>Model</th>
+          <th>Date</th>
+          <th style="text-align:right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in predictions %}
+        <tr>
+          <td style="font-size:12px;color:var(--on-surface-variant);">#{{ p.id }}</td>
+          <td>
+            <span style="font-size:14px;font-weight:600;color:var(--primary);text-transform:capitalize;">{{ p.predicted_crop }}</span>
+          </td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.N) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.P) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.K) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.temperature) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.humidity) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.rainfall) }}</td>
+          <td style="font-size:13px;">{{ "%.1f"|format(p.ph) }}</td>
+          <td>
+            <span style="font-size:12px;font-weight:600;{{ 'color:var(--secondary);' if p.confidence_score >= 0.8 else 'color:var(--tertiary);' }}">
+              {{ "%.1f"|format(p.confidence_score * 100) }}%
+            </span>
+          </td>
+          <td><span class="chip chip-neutral" style="font-size:10px;">{{ p.model_name }}</span></td>
+          <td style="font-size:12px;color:var(--on-surface-variant);">{{ p.timestamp[:16] | replace('T', ' ') }}</td>
+          <td style="text-align:right;">
+            <form method="POST" action="{{ url_for('admin_bp.admin_delete_record', record_id=p.id) }}" onsubmit="return confirm('Delete record #{{ p.id }}?');" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--error);padding:4px;border-radius:4px;" title="Delete Record" onmouseover="this.style.background='rgba(186,26,26,0.1)'" onmouseout="this.style.background='none'">
+                <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="13" style="text-align:center;padding:48px 24px;">
+            <span class="material-symbols-outlined" style="font-size:48px;color:var(--outline-variant);display:block;margin-bottom:12px;">inbox</span>
+            <div style="font-size:15px;color:var(--on-surface-variant);font-weight:600;">No records found</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
