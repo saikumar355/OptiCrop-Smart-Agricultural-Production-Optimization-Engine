@@ -1,0 +1,7 @@
+{
+    "model_name": "Extra Trees",
+    "f1_weighted": 0.9318181818181819,
+    "serialization_timestamp": "2026-07-01T122126Z",
+    "model_path": "saved_models/ExtraTrees_2026-07-01T122126Z.pkl",
+    "scaler_path": "saved_models/scaler_2026-07-01T122126Z.pkl"
+}
