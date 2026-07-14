@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}Crop Recommendation — OptiCrop AI{% endblock %}
+{% block page_title %}Recommendation Engine{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:32px;" class="fade-up">
+  <h2 style="font-size:40px;font-weight:800;letter-spacing:-0.02em;color:var(--primary);line-height:1.1;">Crop Recommendation</h2>
+  <p style="font-size:15px;color:var(--on-surface-variant);max-width:560px;margin-top:8px;line-height:1.6;">
+    Analyze your soil composition and climate variables. Our ML engine recommends the optimal crop with a precision confidence score.
+  </p>
+</div>
+
+<div style="display:grid;grid-template-columns:7fr 5fr;gap:24px;align-items:start;" class="fade-up">
+
+  <!-- ══ Form Panel ══ -->
+  <div>
+    <div class="ambient-card" style="padding:32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+        <h3 style="font-size:16px;font-weight:700;color:var(--secondary);display:flex;align-items:center;gap:8px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">analytics</span>
+          Soil &amp; Climate Parameters
+        </h3>
+        <button type="button" id="clearBtn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--error);font-family:inherit;font-weight:600;">
+          <span class="material-symbols-outlined" style="font-size:16px;">restart_alt</span>
+          Clear All
+        </button>
+      </div>
+
+      <form id="recommendForm" novalidate style="display:grid;grid-template-columns:1fr 1fr;gap:28px 32px;">
+
+        <div class="oc-field" id="field-N">
+          <input type="number" step="0.1" name="N" id="inp-N" placeholder=" ">
+          <label for="inp-N">Nitrogen (N) Content</label>
+          <div class="field-hint"><span>Range: 0–140 mg/kg</span><span class="material-symbols-outlined" style="font-size:15px;cursor:help;" title="Essential for leaf growth and protein production">info</span></div>
+        </div>
+
+        <div class="oc-field" id="field-P">
+          <input type="number" step="0.1" name="P" id="inp-P" placeholder=" ">
+          <label for="inp-P">Phosphorus (P) Content</label>
+          <div class="field-hint"><span>Range: 5–145 mg/kg</span><span class="material-symbols-outlined" style="font-size:15px;cursor:help;" title="Critical for root development and flowering">info</span></div>
+        </div>
+
+        <div class="oc-field" id="field-K">
+          <input type="number" step="0.1" name="K" id="inp-K" placeholder=" ">
+          <label for="inp-K">Potassium (K) Content</label>
+          <div class="field-hint"><span>Range: 5–205 mg/kg</span><span class="material-symbols-outlined" style="font-size:15px;cursor:help;" title="Improves disease resistance and plant health">info</span></div>
+        </div>
+
+        <div class="oc-field" id="field-ph">
+          <input type="number" step="0.1" name="ph" id="inp-ph" placeholder=" ">
+          <label for="inp-ph">Soil pH Level</label>
+          <div class="field-hint"><span>Optimal: 5.5–7.5</span><span class="material-symbols-outlined" style="font-size:15px;cursor:help;" title="Measures soil acidity or alkalinity">info</span></div>
+        </div>
+
+        <div class="oc-field" id="field-temperature">
+          <input type="number" step="0.1" name="temperature" id="inp-temperature" placeholder=" ">
+          <label for="inp-temperature">Avg. Temperature (°C)</label>
+          <div class="field-hint"><span>Seasonal average — Range: 0–50</span></div>
+        </div>
+
+        <div class="oc-field" id="field-humidity">
+          <input type="number" step="0.1" name="humidity" id="inp-humidity" placeholder=" ">
+          <label for="inp-humidity">Humidity (%)</label>
+          <div class="field-hint"><span>Relative atmosphere — Range: 0–100</span></div>
+        </div>
+
+        <div class="oc-field" style="grid-column:span 2;" id="field-rainfall">
+          <input type="number" step="0.1" name="rainfall" id="inp-rainfall" placeholder=" ">
+          <label for="inp-rainfall">Annual Rainfall (mm)</label>
+          <div class="field-hint"><span>Total precipitation for cycle — Range: 0–300</span></div>
+        </div>
+
+        <div style="grid-column:span 2;padding-top:8px;">
+          <button type="submit" id="submitBtn" class="btn btn-primary btn-block" style="padding:16px;font-size:16px;border-radius:12px;">
+            <span class="material-symbols-outlined">online_prediction</span>
+            Predict Best Crop
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Guidance Cards -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;">
+      <div class="ambient-card" style="padding:20px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--secondary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--on-secondary-container);">experiment</span>
+        </div>
+        <h4 style="font-size:13px;font-weight:700;color:var(--on-surface);margin-bottom:6px;">Soil Sampling</h4>
+        <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;">Take samples from 5+ points at 15 cm depth for best results.</p>
+      </div>
+      <div class="ambient-card" style="padding:20px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--secondary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--on-secondary-container);">cloud</span>
+        </div>
+        <h4 style="font-size:13px;font-weight:700;color:var(--on-surface);margin-bottom:6px;">Climate Context</h4>
+        <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;">Use projected rainfall for the upcoming 4-month growing cycle.</p>
+      </div>
+      <div class="ambient-card" style="padding:20px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--secondary-container);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--on-secondary-container);">auto_stories</span>
+        </div>
+        <h4 style="font-size:13px;font-weight:700;color:var(--on-surface);margin-bottom:6px;">Crop Management</h4>
+        <p style="font-size:12px;color:var(--on-surface-variant);line-height:1.5;">Check Suitability for variety-specific spacing and sowing depth.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Result Panel ══ -->
+  <div style="position:sticky;top:calc(var(--topbar-h) + 24px);">
+
+    <!-- Empty State -->
+    <div id="initialState" class="ambient-card" style="padding:40px;text-align:center;min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--outline-variant);">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--surface-container-high);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+        <span class="material-symbols-outlined" style="font-size:36px;color:var(--outline-variant);">monitoring</span>
+      </div>
+      <h4 style="font-size:16px;font-weight:700;color:var(--on-surface);margin-bottom:8px;">No Parameters Analyzed</h4>
+      <p style="font-size:14px;color:var(--on-surface-variant);line-height:1.5;max-width:260px;">Fill in soil data to generate AI-powered crop recommendations.</p>
+    </div>
+
+    <!-- Result State (hidden) -->
+    <div id="resultState" style="display:none;">
+      <!-- Prediction Card -->
+      <div class="prediction-gradient" style="padding:28px;margin-bottom:16px;" id="resultCard">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+          <span style="background:rgba(255,255,255,0.2);padding:4px 12px;border-radius:100px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Top Match</span>
+          <div style="text-align:right;">
+            <div style="font-size:36px;font-weight:800;letter-spacing:-0.02em;" id="confScore">—</div>
+            <div style="font-size:11px;opacity:0.65;margin-top:2px;">AI Confidence</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px;">
+          <div style="width:80px;height:80px;border-radius:16px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:42px;">agriculture</span>
+          </div>
+          <div>
+            <h3 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;" id="cropName">—</h3>
+            <p style="font-size:13px;opacity:0.75;margin-top:4px;">AI Recommended Crop</p>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span class="material-symbols-outlined" style="font-size:16px;opacity:0.8;">psychology</span>
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;opacity:0.8;">Analysis Summary</span>
+          </div>
+          <p style="font-size:13px;line-height:1.6;opacity:0.9;" id="analysisSummary">
+            Based on your soil parameters, this crop is the optimal selection.
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Card -->
+      <div id="errorCard" style="display:none;">
+        <div class="oc-alert danger">
+          <span class="material-symbols-outlined">error</span>
+          <div>
+            <strong style="display:block;margin-bottom:4px;">Prediction Failed</strong>
+            <span id="errorMsg"></span>
+            <span id="errorCorrelation" style="display:block;font-size:11px;opacity:0.65;margin-top:4px;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /result panel -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+import { validateForm, bindValidationClear, FIELD_RANGES } from "{{ url_for('static', filename='js/validation.js') }}";
+import { showLoading, hideLoading } from "{{ url_for('static', filename='js/loading.js') }}";
+
+const form        = document.getElementById('recommendForm');
+const submitBtn   = document.getElementById('submitBtn');
+const clearBtn    = document.getElementById('clearBtn');
+const initialState = document.getElementById('initialState');
+const resultState  = document.getElementById('resultState');
+const resultCard   = document.getElementById('resultCard');
+const errorCard    = document.getElementById('errorCard');
+
+bindValidationClear(form);
+
+clearBtn.addEventListener('click', () => { form.reset(); });
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  resultState.style.display = 'none';
+  initialState.style.display = 'flex';
+  resultCard.style.display = '';
+  errorCard.style.display = 'none';
+
+  const { isValid, data } = validateForm(form);
+  if (!isValid) return;
+
+  showLoading(submitBtn, form);
+
+  try {
+    const res = await fetch("{{ url_for('recommend_bp.api_recommend') }}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+
+    if (res.ok) {
+      const crop = json.predicted_crop;
+      const conf = (json.confidence_score * 100).toFixed(1);
+      document.getElementById('cropName').textContent = crop.charAt(0).toUpperCase() + crop.slice(1);
+      document.getElementById('confScore').textContent = conf + '%';
+      document.getElementById('analysisSummary').textContent =
+        `Your soil conditions are optimal for ${crop}. Confidence score: ${conf}%. This recommendation is based on N, P, K, temperature, humidity, rainfall, and pH analysis.`;
+      initialState.style.display = 'none';
+      resultState.style.display = 'block';
+    } else if (res.status === 400 && json.fields) {
+      // Server-side validation errors
+      for (const [field, msg] of Object.entries(json.fields)) {
+        const wrap = document.getElementById(`field-${field}`);
+        const input = form.querySelector(`[name="${field}"]`);
+        if (wrap && input) {
+          wrap.classList.add('is-invalid');
+          input.style.borderBottomColor = 'var(--error)';
+          let fb = wrap.querySelector('.invalid-feedback');
+          if (!fb) { fb = document.createElement('div'); fb.className = 'invalid-feedback'; wrap.appendChild(fb); }
+          fb.textContent = msg;
+        }
+      }
+    } else if (res.status === 429) {
+      initialState.style.display = 'none';
+      resultCard.style.display = 'none';
+      errorCard.style.display = 'block';
+      document.getElementById('errorMsg').textContent = 'Rate limit exceeded. Please wait a moment and try again.';
+      resultState.style.display = 'block';
+    } else {
+      initialState.style.display = 'none';
+      resultCard.style.display = 'none';
+      errorCard.style.display = 'block';
+      document.getElementById('errorMsg').textContent = json.error || 'An internal error occurred.';
+      if (json.correlation_id) document.getElementById('errorCorrelation').textContent = `ID: ${json.correlation_id}`;
+      resultState.style.display = 'block';
+    }
+  } catch (err) {
+    initialState.style.display = 'none';
+    resultCard.style.display = 'none';
+    errorCard.style.display = 'block';
+    document.getElementById('errorMsg').textContent = 'Network error. Please try again later.';
+    resultState.style.display = 'block';
+  } finally {
+    hideLoading(submitBtn, form);
+  }
+});
+</script>
+{% endblock %}
