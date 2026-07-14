@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 Not Found — OptiCrop AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+</head>
+<body style="background:#f8faf8; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
+  <div style="text-align:center; padding:48px 32px; max-width:480px;">
+    <div style="font-size:96px; font-weight:800; color:#00450d; letter-spacing:-0.04em; line-height:1; margin-bottom:16px;">404</div>
+    <h1 style="font-size:24px; font-weight:600; color:#191c1b; margin:0 0 12px; letter-spacing:-0.01em;">Page Not Found</h1>
+    <p style="font-size:15px; color:#41493e; line-height:1.7; margin:0 0 32px;">The page you're looking for doesn't exist or has been moved. Let's get you back on track.</p>
+    <a href="{{ url_for('main_bp.index') }}" class="btn-primary-oc" style="text-decoration:none; justify-content:center;">
+      <span class="material-symbols-outlined">home</span>Return Home
+    </a>
+    <div style="margin-top:24px;">
+      <a href="javascript:history.back()" style="font-size:13px; color:#717a6d; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span>Go Back
+      </a>
+    </div>
+  </div>
+</body>
+</html>
