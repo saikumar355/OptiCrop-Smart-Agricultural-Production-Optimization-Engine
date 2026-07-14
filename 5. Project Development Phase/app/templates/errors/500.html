@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 Server Error — OptiCrop AI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+</head>
+<body style="background:#f8faf8; margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
+  <div style="text-align:center; padding:48px 32px; max-width:480px;">
+    <div style="font-size:96px; font-weight:800; color:#ba1a1a; letter-spacing:-0.04em; line-height:1; margin-bottom:16px;">500</div>
+    <h1 style="font-size:24px; font-weight:600; color:#191c1b; margin:0 0 12px; letter-spacing:-0.01em;">Internal Server Error</h1>
+    <p style="font-size:15px; color:#41493e; line-height:1.7; margin:0 0 16px;">An unexpected error occurred on our end. Our team has been notified and is working on a fix.</p>
+    {% if correlation_id %}
+    <div style="background:#f2f4f2; border-radius:8px; padding:12px 16px; margin-bottom:24px; font-size:12px; color:#717a6d;">
+      Reference: <code style="font-family:monospace; color:#41493e;">{{ correlation_id }}</code>
+    </div>
+    {% else %}
+    <div style="margin-bottom:24px;"></div>
+    {% endif %}
+    <a href="{{ url_for('main_bp.index') }}" class="btn-primary-oc" style="text-decoration:none; justify-content:center;">
+      <span class="material-symbols-outlined">home</span>Return Home
+    </a>
+    <div style="margin-top:24px;">
+      <a href="javascript:location.reload()" style="font-size:13px; color:#717a6d; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+        <span class="material-symbols-outlined" style="font-size:16px;">refresh</span>Try Again
+      </a>
+    </div>
+  </div>
+</body>
+</html>
